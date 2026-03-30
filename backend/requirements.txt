@@ -5,4 +5,4 @@ opencv-python-headless
 torch
 torchvision
 segmentation-models-pytorch
-numpy
+numpy<2.0
