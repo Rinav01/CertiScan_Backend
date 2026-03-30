@@ -21,6 +21,6 @@ def preprocess_image(file_bytes: bytes, size: int = 224):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (size, size)).astype(np.float32) / 255.0
 
-    tensor = torch.tensor(image).permute(2, 0, 1).unsqueeze(0).float()
+    tensor = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).float()
 
     return tensor, image
