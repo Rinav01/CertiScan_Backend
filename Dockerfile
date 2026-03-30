@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copy requirements files (both root and backend)
 COPY requirements.txt .
+COPY backend/requirements.txt backend/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
