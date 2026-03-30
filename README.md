@@ -8,7 +8,7 @@ CertiScan Backend is a FastAPI-based REST API for detecting document forgery and
 
 - **Model**: U-Net with EfficientNet-B0 encoder
 - **Framework**: FastAPI + Uvicorn
-- **Deployment**: Ready for Railway, Docker, or traditional hosting
+- **Deployment**: Ready for Vercel serverless
 
 ## Quick start (local development)
 
@@ -32,21 +32,26 @@ Server will be at `http://127.0.0.1:8000`
 
 View interactive API docs: `http://127.0.0.1:8000/docs`
 
-## Quick start (Docker)
+## Deploying to Vercel
 
-```bash
-docker build -t certiscan:latest .
-docker run -p 8000:8000 certiscan:latest
-```
-
-## Deploying to Railway
+Deploy this backend as serverless functions to Vercel:
 
 1. Push to GitHub
-2. Connect repo to [Railway](https://railway.app)
-3. Set environment variables (see `.env.example`)
-4. Deploy — Railway handles the rest via `Procfile`
+2. Connect repo to [Vercel](https://vercel.com)
+3. Set environment variables (see `.env.example`):
+   - `UNET_MODEL_PATH` — path to model checkpoint
+   - `CORS_ORIGINS` — comma-separated frontend domains
+4. Deploy — Vercel auto-detects `vercel.json` config
 
-**See [backend/README.md](backend/README.md) for detailed Railway setup instructions.**
+**[VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)** — Complete setup guide with troubleshooting
+
+### Important Notes
+
+- ⏱️ Vercel functions have a **60-second timeout** (model loading takes 15-30s)
+- 💾 No persistent storage — output masks are returned as encoded data
+- 🌡️ Cold starts cause slowdowns — pre-warm with periodic health checks
+
+See `VERCEL_DEPLOYMENT.md` for workarounds and best practices.
 
 ## API usage
 

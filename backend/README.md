@@ -1,6 +1,6 @@
 # CertiScan Backend
 
-Deepfake Document Detection API — U-Net segmentation model for detecting manipulation regions in document images. This README provides developer- and operator-facing details: architecture, installation, API schema, examples, testing, Docker usage, and troubleshooting.
+Deepfake Document Detection API — U-Net segmentation model for detecting manipulation regions in document images. This README provides developer- and operator-facing details: architecture, installation, API schema, examples, testing, and troubleshooting.
 
 ## Quick summary
 
@@ -137,67 +137,16 @@ pip install pytest
 pytest -q
 ```
 
-## Docker
+## Deployment
 
-A `Dockerfile` is included for containerized deployments. Build and run locally:
+For production deployment instructions, see the root [`README.md`](../README.md) and [`VERCEL_DEPLOYMENT.md`](../VERCEL_DEPLOYMENT.md).
 
-```bash
-docker build -t certiscan-backend:latest .
-docker run -p 8000:8000 \
-  -e UNET_MODEL_PATH=/app/backend/unet_finetuned_v2.pth \
-  -e CORS_ORIGINS="http://localhost:3000" \
-  certiscan-backend:latest
-```
+## Production considerations
 
-## Railway deployment
-
-This project is configured for easy deployment to [Railway](https://railway.app).
-
-### Quick start
-
-1. Push this repository to GitHub
-2. Create a new Railway project and connect your GitHub repository
-3. Railway will automatically detect `Procfile` and deploy the app
-4. Set the following environment variables in Railway dashboard:
-   - `UNET_MODEL_PATH`: path to your model checkpoint (default: `backend/unet_finetuned_v2.pth`)
-   - `CORS_ORIGINS`: comma-separated list of frontend domain(s) (e.g., `https://myapp.com,https://www.myapp.com`)
-   - `ALLOW_UNTRAINED_MODEL`: set to `0` for production (1 only for testing without a model)
-
-### Prerequisites
-
-- A trained U-Net checkpoint file (`unet_finetuned_v2.pth`) must be accessible or committed to the repo
-- Python 3.10 (specified in `runtime.txt`)
-
-### Configuration files
-
-- `Procfile` — tells Railway how to run the app (Uvicorn with 0.0.0.0:$PORT)
-- `runtime.txt` — specifies Python 3.10
-- `.env.example` — template for environment variables
-- `Dockerfile` — optional Docker build configuration
-- `.dockerignore` — excludes unnecessary files from Docker build
-
-### Monitoring and logs
-
-- View logs in the Railway dashboard: **Project → Deployment → Logs**
-- Configure alerts for deployment failures or high error rates
-
-### Custom domain
-
-Once deployed:
-1. Go to Railway project settings
-2. Add a custom domain (or use Railway's auto-generated domain)
-3. Update your frontend `CORS_ORIGINS` in Railway to allow requests from your domain
-
-## Deployment & scaling recommendations
-
-- Prefer GPU hosts for higher throughput. Ensure `torch` + CUDA are installed in the environment.
-- For production, run multiple Uvicorn worker processes behind a process manager (Gunicorn with uvicorn workers) or use an ASGI container platform.
-- Protect `/predict` with authentication if exposing publicly; currently there is no auth.
-
-## Logging & observability
-
-- Application logging is configured in [backend/main.py](backend/main.py#L1). Integrate with a log aggregator or structured logging in production.
-- Add metrics (Prometheus) around request latency and model inference time if needed.
+- Protect `/predict` endpoint with authentication if exposing publicly (currently no auth layer)
+- Application logging is configured in [backend/main.py](backend/main.py#L1) — integrate with centralized logging in production
+- Consider adding rate limiting for the `/predict` endpoint to prevent abuse
+- Monitor model inference time and add metrics for observability
 
 ## Common errors & troubleshooting
 
