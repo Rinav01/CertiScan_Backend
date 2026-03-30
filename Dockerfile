@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy requirements first so Docker can cache the layer
-COPY requirements.txt ./
+# Copy the actual requirements file (the root one just does -r backend/requirements.txt
+# which breaks inside Docker — copy the real file directly instead)
+COPY backend/requirements.txt ./requirements.txt
 
 # Install CPU-only torch wheel first (much smaller than default CUDA bundle)
 # then install the rest of the requirements
