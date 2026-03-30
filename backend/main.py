@@ -1,7 +1,8 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 try:
@@ -48,6 +49,29 @@ app.mount("/outputs", StaticFiles(directory=str(OUTPUTS_DIR)), name="outputs")
 
 # Include routes
 app.include_router(router)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Catch-all for unhandled exceptions.
+    Starlette's CORSMiddleware skips header injection on unhandled exceptions,
+    so we manually add CORS headers here so the browser sees the actual error
+    instead of a misleading CORS block.
+    """
+    origin = request.headers.get("origin", "*")
+    allowed = DEFAULT_CORS_ORIGINS == ["*"] or origin in DEFAULT_CORS_ORIGINS
+    cors_origin = origin if allowed else ""
+
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": cors_origin or "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
 
 
 @app.on_event("startup")

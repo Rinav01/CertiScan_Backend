@@ -46,17 +46,26 @@ async def predict(request: Request, file: UploadFile = File(...)):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    mask = run_inference(image_tensor)
-    confidence = calculate_confidence(mask)
+    try:
+        mask = run_inference(image_tensor)
+        confidence = calculate_confidence(mask)
 
-    label = "Fake" if confidence > PREDICTION_THRESHOLD else "Real"
+        label = "Fake" if confidence > PREDICTION_THRESHOLD else "Real"
 
-    OUTPUTS_DIR.mkdir(exist_ok=True)
-    mask_filename = f"{uuid.uuid4()}.png"
-    output_file = OUTPUTS_DIR / mask_filename
+        OUTPUTS_DIR.mkdir(exist_ok=True)
+        mask_filename = f"{uuid.uuid4()}.png"
+        output_file = OUTPUTS_DIR / mask_filename
 
-    if not cv2.imwrite(str(output_file), (mask * 255).astype("uint8")):
-        raise HTTPException(status_code=500, detail="Failed to write prediction mask.")
+        success = cv2.imwrite(str(output_file), (mask * 255).astype("uint8"))
+        if not success:
+            raise HTTPException(
+                status_code=500,
+                detail=f"cv2.imwrite failed - could not write mask to {output_file}",
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Inference error: {exc}") from exc
 
     mask_path = str(Path("outputs") / mask_filename).replace("\\", "/")
     mask_url = str(request.base_url).rstrip("/") + "/" + mask_path
